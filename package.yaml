@@ -6,6 +6,8 @@ build-type: Simple
 maintainer: Chris Stryczynski
 dependencies:
 - base >=4.10 && <4.11
+- process
+- stm
 name: app
 version: '0.1.0.0'
 extra-source-files: ChangeLog.md
