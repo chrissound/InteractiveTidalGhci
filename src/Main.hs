@@ -22,7 +22,7 @@ getKey = reverse <$> getKey' ""
 type Commands = TMVar [String]
 
 ghci :: Commands -> IO ()
-ghci cmds = createProcess ((proc "ghci" ["-ignore-dot-ghci"])) {std_in=CreatePipe} >>= \case
+ghci cmds = createProcess ((proc "/usr/bin/ghci" [])) {std_in=CreatePipe} >>= \case
     (Just pin, Nothing, Nothing, ph) -> processCommandsLoop cmds pin
     _ -> error "Something went wrong"
 
@@ -43,17 +43,18 @@ mainLoop commands = do
   key <- getKey
   when (key /= "\ESC") $ do
     case key of
-      -- "s" -> do
-      --   putStrLn "-- ## Starting!"
-      --   ghci
-      "r" -> putStrLn "-- ## Reloading!"
+      "i" -> do
+        putStrLn "-- ## Initializing!"
+        atomically $ putTMVar commands ([":script TidalGhci.hs"])
+      "r" -> do
+        putStrLn "-- ## Reloading!"
+        atomically $ putTMVar commands ([":reload", ":script TidalGhci.hs", "doAction"])
       "t" -> do
         putStrLn "-- ## Testing!"
-        atomically $ putTMVar commands ([":t head", ":t tail"])
-      "h" -> putStrLn "-- ## Hushing!"
-      "d" -> do
-        putStrLn "-- ## Debug!"
-        (atomically $ readTMVar commands) >>= print
+        atomically $ putTMVar commands (["d1 $ s \"bd\""])
+      "h" -> do
+        putStrLn "-- ## Hushing!"
+        atomically $ putTMVar commands (["hush"])
       _        -> return ()
   mainLoop commands
 
